@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>How to Run - E-commerce Site</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>How to Run the E-commerce Site</h1>
+    <nav>
+      <a href="index.html">Products</a> |
+      <a href="cart.html">Cart</a> |
+      <a href="login.html">Login</a> |
+      <a href="register.html">Register</a>
+    </nav>
+  </header>
+  <main>
+    <section>
+      <h2>Setup and Run Instructions</h2>
+      <ol>
+        <li>Open your terminal or command prompt.</li>
+        <li>Navigate to the project directory:
+          <pre>cd c:/Users/Admin/OneDrive/Desktop/Intern/ecommerce-site</pre>
+        </li>
+        <li>Install dependencies:
+          <pre>npm install</pre>
+        </li>
+        <li>Ensure MongoDB is running locally on your machine (default port 27017).</li>
+        <li>Start the server:
+          <pre>npm start</pre>
+          or for development with auto-reload:
+          <pre>npm run dev</pre>
+        </li>
+        <li>Open your browser and go to:
+          <pre>http://localhost:3000</pre>
+        </li>
+      </ol>
+    </section>
+    <section>
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>npm error enoent:</strong> Make sure you run npm commands inside the <code>ecommerce-site</code> directory where <code>package.json</code> is located.</li>
+        <li><strong>MongoDB connection failure:</strong> Ensure MongoDB service is running locally. You can start it using your system's service manager or by running <code>mongod</code> in a separate terminal.</li>
+        <li><strong>Port conflicts:</strong> If port 3000 is in use, set a different port by setting the environment variable <code>PORT</code> before starting the server, e.g., <code>PORT=4000 npm start</code>.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

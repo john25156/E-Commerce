@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopping Cart</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Shopping Cart</h1>
+    <nav>
+      <a href="index.html">Home</a> |
+      <a href="login.html">Login</a> |
+      <a href="register.html">Register</a>
+    </nav>
+  </header>
+  <main>
+    <div id="cart-items"></div>
+    <div id="cart-total"></div>
+    <button id="checkout-btn">Checkout</button>
+  </main>
+  <script>
+    const apiBase = '/api';
+
+    function loadCart() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        document.getElementById('cart-items').innerText = 'Your cart is empty.';
+        document.getElementById('cart-total').innerText = '';
+        document.getElementById('checkout-btn').style.display = 'none';
+        return;
+      }
+      fetchProducts(cart);
+    }
+
+    async function fetchProducts(cart) {
+      try {
+        const productIds = cart.map(item => item.productId);
+        const products = [];
+        for (const id of productIds) {
+          const res = await fetch(`${apiBase}/products/${id}`);
+          if (!res.ok) throw new Error('Failed to fetch product');
+          const product = await res.json();
+          products.push(product);
+        }
+        displayCart(cart, products);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('cart-items').innerText = 'Failed to load cart products.';
+      }
+    }
+
+    function displayCart(cart, products) {
+      const container = document.getElementById('cart-items');
+      container.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        const product = products.find(p => p._id === item.productId);
+        if (product) {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'product-card';
+          const itemTotal = product.price * item.quantity;
+          total += itemTotal;
+          itemDiv.innerHTML = 
+            '<h3>' + product.name + '</h3>' +
+            '<p>Quantity: ' + item.quantity + '</p>' +
+            '<p>Price: $' + product.price.toFixed(2) + '</p>' +
+            '<p>Total: $' + itemTotal.toFixed(2) + '</p>' +
+            '<button onclick="removeFromCart(\'' + product._id + '\')">Remove</button>';
+          container.appendChild(itemDiv);
+        }
+      });
+      document.getElementById('cart-total').innerText = 'Total: $' + total.toFixed(2);
+      document.getElementById('checkout-btn').style.display = 'inline-block';
+    }
+
+    function removeFromCart(productId) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart = cart.filter(item => item.productId !== productId);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      loadCart();
+    }
+
+    document.getElementById('checkout-btn').addEventListener('click', async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to proceed with checkout.');
+        window.location.href = 'login.html';
+        return;
+      }
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+      let totalPrice = 0;
+      for (const item of cart) {
+        const res = await fetch(`${apiBase}/products/${item.productId}`);
+        if (!res.ok) {
+          alert('Failed to fetch product details.');
+          return;
+        }
+        const product = await res.json();
+        totalPrice += product.price * item.quantity;
+      }
+      try {
+        const res = await fetch(`${apiBase}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ products: cart, totalPrice })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Order placed successfully!');
+          localStorage.removeItem('cart');
+          loadCart();
+          window.location.href = 'index.html';
+        } else {
+          alert(data.message || 'Failed to place order.');
+        }
+      } catch (err) {
+        alert('Error placing order.');
+      }
+    });
+
+    window.onload = () => {
+      loadCart();
+    };
+  </script>
+</body>
+</html>
